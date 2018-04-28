@@ -21,7 +21,11 @@
 %define rstack r13
 
 section .data
-not_found: db "Unknown command\n", 0
+not_found: db "Unknown command", 10, 0
+
+program_stub: dq 0
+xt_interpreter: dq .interpreter
+.interpreter: dq interpreter_loop
 
 section .bss
 resq 1023
@@ -35,10 +39,6 @@ _start:
    mov pc, xt_interpreter 
    jmp next
 
-program_stub: dq 0
-xt_interpreter: dq .interpreter
-.interpreter: dq interpreter_loop
-
 next:
    mov w, [pc]
    add pc, 8
@@ -49,22 +49,27 @@ interpreter_loop:
    mov rsi, 1024
    call read_word
    mov rdi, rax
+   push rdi
    call string_length
+   pop rdi
    mov r8, rax
    cmp rax, 0
    je .return
+   mov rsi, rdi
+   mov rdi, last_word
    call find_word_impl
    cmp rax, 0
-   jne .not_found
+   je .not_found
+   mov rdi, rax
    call cfa_impl
    mov [program_stub], rax
    mov pc, program_stub
    jmp next 
    .not_found:
-   call parse_int
-   cmp r8, rdx
-   jne .return
-   push rax 
+      call parse_int
+      cmp r8, rdx
+      jne .return
+      push rax 
    .return:
       jmp next
 
@@ -109,10 +114,12 @@ interpreter_loop:
       cmp rax, 0
       je .next
       pop rdi
+      pop rsi
       push rdi 
       call string_length
       pop rdi
-      lea rax, [rdi + rax + 1]
+      sub rdi, 8
+      mov rax, rdi
       ret
       .next:
           pop rdi
@@ -121,15 +128,22 @@ interpreter_loop:
           mov rax, [rdi] 
           cmp rdi, 0  
           je .failed 
-          call find_word 
+          call find_word_impl 
       .failed:
           mov rdi, not_found
           call print_string
           ret
 
    native cfa, find_word, "cfa"
+       add rdi, 8
+       push rdi
+       call string_length
+       pop rdi
+       add rax, rdi
+       add rax, 2
+       ret
 
-   last_word:
+last_word:
    native bye, cfa, "bye"
       call exit
  
