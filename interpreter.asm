@@ -36,13 +36,14 @@ section .text
 
 _start:
    mov rstack, rstack_start
-   mov pc, xt_interpreter 
+   mov pc, xt_interpreter
    jmp next
 
-next:
-   mov w, [pc]
-   add pc, 8
-   jmp [w]
+next:                  ; inner interpreter, fetches next word to execute
+    mov w, pc
+    add pc, 8
+    mov w, [w]
+    jmp [w]
 
 interpreter_loop:
    mov rdi, input_buf
@@ -57,7 +58,9 @@ interpreter_loop:
    je .return
    mov rsi, rdi
    mov rdi, last_word
+   push rsi
    call find_word_impl
+   pop rsi
    cmp rax, 0
    je .not_found
    mov rdi, rax
@@ -66,11 +69,15 @@ interpreter_loop:
    mov pc, program_stub
    jmp next 
    .not_found:
+      mov rdi, rsi
       call parse_int
       cmp r8, rdx
       jne .return
       push rax 
    .return:
+      mov pc, xt_interpreter
+      mov rdi, not_found
+      call print_string
       jmp next
 
    w_0: dq 0
@@ -115,9 +122,6 @@ interpreter_loop:
       je .next
       pop rdi
       pop rsi
-      push rdi 
-      call string_length
-      pop rdi
       sub rdi, 8
       mov rax, rdi
       ret
@@ -125,15 +129,15 @@ interpreter_loop:
           pop rdi
           pop rsi
           sub rdi, 8
-          mov rax, [rdi] 
+          mov rdi, [rdi] 
           cmp rdi, 0  
           je .failed 
           call find_word_impl 
-      .failed:
-          mov rdi, not_found
-          call print_string
           ret
-
+      .failed:
+          mov rax, 0
+          ret
+      
    native cfa, find_word, "cfa"
        add rdi, 8
        push rdi
