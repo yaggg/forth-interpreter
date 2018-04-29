@@ -49,14 +49,7 @@ interpreter_loop:
    mov rdi, input_buf
    mov rsi, 1024
    call read_word
-   mov rdi, rax
-   push rdi
-   call string_length
-   pop rdi
-   mov r8, rax
-   cmp rax, 0
-   je .return
-   mov rsi, rdi
+   mov rsi, rax
    mov rdi, last_word
    push rsi
    call find_word_impl
@@ -70,15 +63,27 @@ interpreter_loop:
    jmp next 
    .not_found:
       mov rdi, rsi
+      push rdi
+      call string_length
+      pop rdi
+      cmp rax, 0
+      je .return_noprint
+      push rax
       call parse_int
-      cmp r8, rdx
+      pop rax
+      cmp rdx, rax
       jne .return
       push rax 
+      jmp .return_noprint
    .return:
       mov pc, xt_interpreter
       mov rdi, not_found
       call print_string
       jmp next
+   .return_noprint:
+      mov pc, xt_interpreter
+      jmp next
+
 
    w_0: dq 0
    native drop, 0, "drop"
