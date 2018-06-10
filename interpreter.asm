@@ -1,20 +1,7 @@
-%include "macro.inc"
+%include "util.inc"
+%include "core-functions.asm"
 
-   global _start
-
-   extern exit
-   extern string_length
-   extern print_string
-   extern print_char  
-   extern print_newline
-   extern print_uint
-   extern print_int
-   extern string_equals
-   extern read_char
-   extern read_word
-   extern parse_uint
-   extern parse_int
-   extern string_copy 
+global _start
 
 %define pc r15
 %define w r14
@@ -39,7 +26,7 @@ _start:
    mov pc, xt_interpreter
    jmp next
 
-next:                  ; inner interpreter, fetches next word to execute
+next: 
     mov w, pc
     add pc, 8
     mov w, [w]
@@ -83,76 +70,3 @@ interpreter_loop:
    .return_noprint:
       mov pc, xt_interpreter
       jmp next
-
-
-   w_0: dq 0
-   native drop, 0, "drop"
-   native swap, drop, "swap"
-   native rot, swap, "rot"
-   native dup, rot, "dup"
-   native not, dup, "not"
-   native and, not, "and"
-   native or, and, "or"
-   native land, or, "land"
-   native lor, land, "lor"
-   native dot, lor, "."
-   native show, dot, ".S"
-   native exit, show, "exit"
-   native to_ret, exit, ">r"
-   native from_ret, to_ret, "r>"
-   native r_fetch, from_ret, "r@"
-   native emit, r_fetch, "emit"
-   native word, emit, "word"
-   native number, word, "number"
-   native branch, number, "branch"
-   native branch0, branch, "branch0"
-   native fetch, branch0, "@"
-   native write, fetch, "!"
-   native write_char, write, "c!"
-   native plus, write_char, "+"
-   native minus, plus, "-"
-   native multiply, minus, "*"
-   native divide, multiply, "/"
-   native mod, divide, "%"
-   native equals, mod, "="
-   native lt, equals, "<"
-   native gt, lt, ">"
-
-   native find_word, gt, "find_word"
-      add rdi, 8
-      push rsi
-      push rdi
-      call string_equals
-      cmp rax, 0
-      je .next
-      pop rdi
-      pop rsi
-      sub rdi, 8
-      mov rax, rdi
-      ret
-      .next:
-          pop rdi
-          pop rsi
-          sub rdi, 8
-          mov rdi, [rdi] 
-          cmp rdi, 0  
-          je .failed 
-          call find_word_impl 
-          ret
-      .failed:
-          mov rax, 0
-          ret
-      
-   native cfa, find_word, "cfa"
-       add rdi, 8
-       push rdi
-       call string_length
-       pop rdi
-       add rax, rdi
-       add rax, 2
-       ret
-
-last_word:
-   native bye, cfa, "bye"
-      call exit
- 

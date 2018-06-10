@@ -1,9 +1,10 @@
-%macro native 3
+%ifndef _MACRO_
+%define _MACRO__
+
+macro native 2
 section .data
 w_%1:
-   .prev: dq w_%2
-   db %3, 0
-   db 0
+   db %2, 0
 xt_%1:
    dq %1_impl
 %1_impl:
@@ -13,4 +14,4 @@ xt_%1:
 dq %1, %2, 0
 %endmacro
 
-
+%endif
