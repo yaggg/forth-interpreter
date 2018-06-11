@@ -59,9 +59,9 @@
        pop rdi
        cmp rax, 0
        je .find
+       mov rdi, [rdi]
        cmp rdi, 0
        je .fail 
-       mov rdi, [rdi]
        jmp .loop
        .find:
            mov rax, rdi
