@@ -110,7 +110,7 @@ print_int:
 
 
 ; rsi - pointer to a first string, rdi - pointer to a second string
-; returns 1 in rax if pointed strings are equals, 0 otherwise
+; returns 0 in rax if pointed strings are equals, 1 otherwise
 string_equals:
 .loop:
     mov r10b, byte[rdi]     ; saving symbol of the first string
@@ -122,10 +122,10 @@ string_equals:
     inc rsi                 ;
     jmp .loop               ; check the next character
 .true:
-    mov rax, 1              ; rax=1 (true)
+    mov rax, 0              ; rax=0 (true)
     ret
 .false:
-    mov rax, 0              ; rax=0 (false)
+    mov rax, 1              ; rax=1 (false)
     ret
 
 

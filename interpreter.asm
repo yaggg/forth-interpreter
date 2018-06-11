@@ -41,36 +41,36 @@ interpreter_loop:
    mov rsi, 1024
    call read_word
    mov rsi, rax
-   mov rdi, w_0 
+   mov rdi, last_word
    push rsi
-   call find_word_impl
+   call find_word_func
    pop rsi
    cmp rax, 0
    je .not_found
    mov rdi, rax
-   call cfa_impl
+   call cfa_func
    mov [program_stub], rax
    mov pc, program_stub
    jmp next 
-   .not_found:
-      mov rdi, rsi
-      push rdi
-      call string_length
-      pop rdi
-      cmp rax, 0
-      je .return_noprint
-      push rax
-      call parse_int
-      pop rax
-      cmp rdx, rax
-      jne .return
-      push rax 
-      jmp .return_noprint
-   .return:
-      mov pc, xt_interpreter
-      mov rdi, not_found
-      call print_string
-      jmp next
-   .return_noprint:
-      mov pc, xt_interpreter
-      jmp next
+.not_found:
+   mov rdi, rsi
+   push rdi
+   call string_length
+   pop rdi
+   cmp rax, 0
+   je .return_noprint
+   push rax
+   call parse_int
+   pop rax
+   cmp rdx, rax
+   jne .return
+   push rax 
+   jmp .return_noprint
+.return:
+   mov pc, xt_interpreter
+   mov rdi, not_found
+   call print_string
+   jmp next
+.return_noprint:
+   mov pc, xt_interpreter
+   jmp next
