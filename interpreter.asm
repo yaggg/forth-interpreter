@@ -1,5 +1,4 @@
 %include "util.inc"
-%include "core-functions.asm"
 
 global _start
 
@@ -7,14 +6,19 @@ global _start
 %define w r14
 %define rstack r13
 
-section .data
-not_found: db "Unknown command", 10, 0
+section .text
 
+%include "core-functions.asm"
+
+section .data
+
+not_found: db "Unknown command", 10, 0
 program_stub: dq 0
 xt_interpreter: dq .interpreter
 .interpreter: dq interpreter_loop
 
 section .bss
+
 resq 1023
 rstack_start: resq 1
 input_buf: resb 1024
@@ -37,7 +41,7 @@ interpreter_loop:
    mov rsi, 1024
    call read_word
    mov rsi, rax
-   mov rdi, last_word
+   mov rdi, w_0 
    push rsi
    call find_word_impl
    pop rsi
