@@ -11,11 +11,6 @@
    native land, "land"
    native lor, "lor"
 
-   native dot, "."
-      pop rdi
-      call print_int
-      ret
-
    native show, ".S"
    native exit, "exit"
    native to_ret, ">r"
@@ -34,9 +29,51 @@
    native multiply, "*"
    native divide, "/"
    native mod, "%"
+      pop r10
+      pop rax 
+      xor rdx, rdx
+      idiv r10
+      push rdx
+      jmp next
+
    native equals, "="
+      pop rsi
+      pop rdi
+      cmp rdi, rsi
+      je .equals
+      push 0
+      jmp next
+   .equals:
+      push 1
+      jmp next
+
    native lt, "<"
+      pop rsi
+      pop rdi
+      cmp rsi, rdi
+      jg .greather
+      push 0
+      jmp next
+   .greather:
+      push 1
+      jmp next
+
    native gt, ">"
+      pop rsi
+      pop rdi
+      cmp rdi, rsi
+      jg .greather
+      push 0
+      jmp next
+   .greather:
+      push 1
+      jmp next
+
+   native dot, "."
+      pop rdi
+      call print_int
+      call print_newline
+      jmp next 
 
    native find_word, "find_word"
        call find_word_func

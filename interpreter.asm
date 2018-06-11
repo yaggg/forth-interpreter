@@ -61,8 +61,8 @@ interpreter_loop:
    je .return_noprint
    push rax
    call parse_int
-   pop rax
-   cmp rdx, rax
+   pop r8
+   cmp rdx, r8
    jne .return
    push rax 
    jmp .return_noprint
