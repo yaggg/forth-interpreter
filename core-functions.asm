@@ -10,7 +10,6 @@
    native or, "or"
    native land, "land"
    native lor, "lor"
-
    native show, ".S"
    native exit, "exit"
    native to_ret, ">r"
@@ -27,7 +26,20 @@
    native plus, "+"
    native minus, "-"
    native multiply, "*"
+      pop r10
+      pop rax 
+      imul r10
+      push rax
+      jmp next
+     
    native divide, "/"
+      pop r10
+      pop rax 
+      xor rdx, rdx
+      idiv r10
+      push rax
+      jmp next
+     
    native mod, "%"
       pop r10
       pop rax 
