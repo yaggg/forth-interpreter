@@ -11,7 +11,6 @@
    native land, "land"
    native lor, "lor"
    native show, ".S"
-   native exit, "exit"
    native to_ret, ">r"
    native from_ret, "r>"
    native r_fetch, "r@"
@@ -21,6 +20,18 @@
    native branch, "branch"
    native branch0, "branch0"
 
+   native exit, "exit"
+      mov pc, [rstack]
+      add rstack, 8
+      jmp next 
+
+   native docol, "docol"
+      sub rstack, 8
+      mov [rstack], pc
+      add w, 8
+      mov pc, w
+      jmp next
+ 
    native fetch, "@"
       pop rax
       mov r10, [rax] 
