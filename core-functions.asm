@@ -24,7 +24,14 @@
    native write, "!"
    native write_char, "c!"
    native plus, "+"
+
    native minus, "-"
+      pop r10
+      pop rax 
+      sub rax, r10
+      push rax
+      jmp next
+      
    native multiply, "*"
       pop r10
       pop rax 
