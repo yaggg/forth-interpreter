@@ -20,11 +20,32 @@
    native number, "number"
    native branch, "branch"
    native branch0, "branch0"
-   native fetch, "@"
-   native write, "!"
-   native write_char, "c!"
-   native plus, "+"
 
+   native fetch, "@"
+      pop rax
+      mov r10, [rax] 
+      push r10
+      jmp next
+
+   native write, "!"
+      pop rax
+      pop r10
+      mov [r10], rax 
+      jmp next
+
+   native write_char, "c!"
+      pop rax
+      pop r10
+      mov byte[r10], al
+      jmp next
+
+   native plus, "+"
+      pop r10
+      pop rax 
+      add rax, r10
+      push rax
+      jmp next
+ 
    native minus, "-"
       pop r10
       pop rax 
@@ -131,6 +152,6 @@
        push rdi
        call string_length
        pop rdi
-       lea rax, [rdi + rax + 1]
+       lea rax, [rdi + rax + 2]
        ret
 

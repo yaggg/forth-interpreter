@@ -17,11 +17,19 @@ program_stub: dq 0
 xt_interpreter: dq .interpreter
 .interpreter: dq interpreter_loop
 
+last_word: dq _lw   ; stores a pointer to the last word in dictionary
+here: dq dict       ; current position in words memory; 
+dp: dq mem          ; current global data pointer 
+
 section .bss
 
 resq 1023
 rstack_start: resq 1
 input_buf: resb 1024
+dict:  resq 65536   ; data for words
+mem: resq 65536     ; global data for user
+state: resq 1       ; changes to 1 if compiling, 0 by default
+
 
 section .text
 
@@ -74,3 +82,4 @@ interpreter_loop:
 .return_noprint:
    mov pc, xt_interpreter
    jmp next
+
