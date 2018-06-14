@@ -14,8 +14,8 @@ section .data
 
 not_found: db "Unknown command", 10, 0
 program_stub: dq 0
-xt_interpreter: dq .interpreter
-.interpreter: dq interpreter_loop
+xt_selector: dq .selector
+.selector: dq selector 
 
 last_word: dq _lw   ; stores a pointer to the last word in dictionary
 here: dq dict       ; current position in words memory; 
@@ -35,7 +35,7 @@ section .text
 
 _start:
    mov rstack, rstack_start
-   mov pc, xt_interpreter
+   mov pc, xt_selector
    jmp next
 
 next: 
@@ -43,6 +43,12 @@ next:
     add pc, 8
     mov w, [w]
     jmp [w]
+
+selector:
+   mov rax, [state]
+   test rax, rax
+   je interpreter_loop
+   jmp compiler_loop
 
 interpreter_loop:
    mov rdi, input_buf
@@ -75,11 +81,13 @@ interpreter_loop:
    push rax 
    jmp .return_noprint
 .return:
-   mov pc, xt_interpreter
+   mov pc, xt_selector
    mov rdi, not_found
    call print_string
    jmp next
 .return_noprint:
-   mov pc, xt_interpreter
+   mov pc, xt_selector
    jmp next
 
+compiler_loop:
+   jmp next
