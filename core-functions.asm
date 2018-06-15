@@ -153,6 +153,34 @@
        .skip:
        add pc, 8
        jmp next
+     
+    native colon, ":"
+       mov rdi, input_buf
+       mov rsi, 1024
+       call read_word
+       mov [here], last_word
+       mov [last_word], [here]
+       add qword[here], 8
+       mov rsi, rax
+       mov rdi, [here]
+       push rsi
+       push rdi
+       string_copy
+       pop rsi
+       pop rdi
+       mov rsi, rdi
+       call string_length
+       add qword[here], rax
+       add qword[here], 2
+       mov qword[here], docol_impl
+       add qword[here], 8
+       mov [state], 1
+       jmp next
+       
+    native semicolon, ";", 1
+       mov [here], xt_exit
+       mov [state], 0
+       jmp next
 
 ;--------------------------------------
 
