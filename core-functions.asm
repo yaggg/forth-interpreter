@@ -158,14 +158,15 @@
        mov rdi, input_buf
        mov rsi, 1024
        call read_word
-       mov [here], last_word
-       mov [last_word], [here]
+       mov qword[here], last_word
+       mov r8, [here]
+       mov qword[last_word], r8
        add qword[here], 8
        mov rsi, rax
        mov rdi, [here]
        push rsi
        push rdi
-       string_copy
+       call string_copy
        pop rsi
        pop rdi
        mov rsi, rdi
@@ -174,12 +175,12 @@
        add qword[here], 2
        mov qword[here], docol_impl
        add qword[here], 8
-       mov [state], 1
+       mov qword[state], 1
        jmp next
        
     native semicolon, ";", 1
-       mov [here], xt_exit
-       mov [state], 0
+       mov qword[here], xt_exit
+       mov qword[state], 0
        jmp next
 
 ;--------------------------------------
