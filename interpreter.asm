@@ -90,4 +90,68 @@ interpreter_loop:
    jmp next
 
 compiler_loop:
+   mov rdi, input_buf
+   mov rsi, 1024
+   call read_word
+   mov rsi, rax
+   mov rdi, last_word
+   push rsi
+   call find_word_func
+   pop rsi
+   cmp rax, 0
+   je .not_found
+   mov rdi, rax
+   push rdi
+   call cfa_func
+   pop rdi
+   mov r8, rax
+   call check_immediate 
+   test rax, rax
+   jne .immediate
+   mov [here], r8
+   add qword[here], 8
+   mov pc, xt_selector
+   jmp next
+.immediate:
+   mov [program_stub], r8
+   mov pc, program_stub
+   jmp next
+.not_found:
+   mov rdi, rsi
+   push rdi
+   call string_length
+   pop rdi
+   cmp rax, 0
+   je .return_empty_line
+   push rax
+   call parse_int
+   pop r8
+   cmp rdx, r8
+   jne .return_not_found
+   sub qword[here], 8
+   mov r8, [here]
+   cmp r8, xt_branch
+   je .branch
+   cmp r8, xt_branch0
+   je .branch
+   add qword[here], 8
+   mov qword[here], xt_lit
+   add qword[here], 8
+   mov [here], rax
+   add qword[here], 8
+   mov pc, xt_selector
+   jmp next
+.branch:
+   add qword[here], 8
+   mov [here], rax
+   add qword[here], 8
+   mov pc, xt_selector
+   jmp next
+.return_not_found:
+   mov pc, xt_selector
+   mov rdi, not_found
+   call print_string
+   jmp next
+.return_empty_line:
+   mov pc, xt_selector
    jmp next

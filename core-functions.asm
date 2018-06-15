@@ -17,8 +17,6 @@
    native emit, "emit"
    native word, "word"
    native number, "number"
-   native branch, "branch"
-   native branch0, "branch0"
 
    native exit, "exit"
       mov pc, [rstack]
@@ -30,6 +28,11 @@
       mov [rstack], pc
       add w, 8
       mov pc, w
+      jmp next
+
+   native lit, "lit"
+      push qword [pc]
+      add pc, 8
       jmp next
  
    native fetch, "@"
@@ -127,17 +130,31 @@
       jmp next 
 
    native find_word, "find_word"
-       call find_word_func
-       jmp next
+      call find_word_func
+      jmp next
 
    native cfa, "cfa"
-       call cfa_func
-       jmp next
+      call cfa_func
+      jmp next
 
    native bye, "bye"
       call exit
 
-;---------------------------------------
+   native branch, "branch"
+       mov pc, [pc]
+       jmp next
+
+   native branch0, "0branch"
+       pop rax
+       test rax, rax
+       jnz .skip
+       mov pc, [pc]
+       jmp next
+       .skip:
+       add pc, 8
+       jmp next
+
+;--------------------------------------
 
    find_word_func:
    .loop:
@@ -166,3 +183,11 @@
        lea rax, [rdi + rax + 2]
        ret
 
+   check_immediate:
+       lea rdi, [rdi + 8]
+       push rdi
+       call string_length
+       pop rdi
+       lea rax, [rdi + rax + 1]
+       ret
+       
