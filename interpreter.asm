@@ -25,10 +25,10 @@ section .bss
 
 resq 1023
 rstack_start: resq 1
-input_buf: resb 1024
 dict:  resq 65536   ; data for words
 mem: resq 65536     ; global data for user
 state: resq 1       ; changes to 1 if compiling, 0 by default
+input_buf: resb 1024
 
 
 section .text
@@ -49,6 +49,8 @@ selector:
    test rax, rax
    je interpreter_loop
    jmp compiler_loop
+
+
 
 interpreter_loop:
    mov rdi, input_buf

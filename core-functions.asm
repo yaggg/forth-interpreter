@@ -144,7 +144,7 @@
        mov pc, [pc]
        jmp next
 
-   native branch0, "0branch"
+   native branch0, "branch0"
        pop rax
        test rax, rax
        jnz .skip
@@ -160,7 +160,9 @@
    .loop:
        push rdi
        lea rdi, [rdi + 8]
+       push rsi
        call string_equals
+       pop rsi
        pop rdi
        cmp rax, 0
        je .find
