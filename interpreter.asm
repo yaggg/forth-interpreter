@@ -52,8 +52,6 @@ selector:
    je interpreter_loop
    jmp compiler_loop
 
-
-
 interpreter_loop:
    mov rdi, input_buf
    mov rsi, 1024

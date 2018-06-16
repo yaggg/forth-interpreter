@@ -155,25 +155,29 @@
        jmp next
      
     native colon, ":"
+       mov r8, [here]
+       mov r9, [last_word]
+       mov qword[r8], r9 
+       mov qword[last_word], r8
+       add qword[here], 8
+
        mov rdi, input_buf
        mov rsi, 1024
        call read_word
-       mov qword[here], last_word
-       mov r8, [here]
-       mov qword[last_word], r8
-       add qword[here], 8
-       mov rsi, rax
-       mov rdi, [here]
+       mov rdi, rax
+       mov rsi, [here]
+       mov rdx, 1024
+
        push rsi
-       push rdi
        call string_copy
        pop rsi
-       pop rdi
-       mov rsi, rdi
+
+       mov rdi, rsi
        call string_length
        add qword[here], rax
        add qword[here], 2
-       mov qword[here], docol_impl
+       mov r8, [here]
+       mov qword[r8], docol_impl
        add qword[here], 8
        mov qword[state], 1
        jmp next
