@@ -14,9 +14,64 @@
    native to_ret, ">r"
    native from_ret, "r>"
    native r_fetch, "r@"
+
+   native colon, ":"
+      mov r8, [here]              ; put previous address firstly
+      mov r9, [last_word]         ;
+      mov qword[r8], r9           ;
+      mov qword[last_word], r8    ; set last word to current
+      add qword[here], 8          ; update here
+
+      mov rdi, input_buf          ; read new word's name 
+      mov rsi, 1024               ;
+      call read_word              ;
+      mov rdi, rax                ; 
+      mov rsi, [here]             ; 
+      mov rdx, 1024               ;
+      push rsi                    ;
+      call string_copy            ; put it into word defitinion
+      pop rsi                     ;
+
+      mov rdi, rsi                ; 
+      call string_length          ;
+      add qword[here], rax        ;
+      add qword[here], 2          ; update here
+      mov r8, [here]              ;
+      mov qword[r8], docol_impl   ; put docol here
+      add qword[here], 8          ; update here
+      mov qword[state], 1         ; change state to compilation
+      jmp next                    ;
+      
+  native semicolon, ";", 1
+     mov r8, [here]              ;
+     mov qword[r8], xt_exit      ; put xt_exit at the end 
+     add qword[here], 8          ; update here
+     mov qword[state], 0         ; change state back
+     jmp next                    ;
+
+
+   native branch, "branch"
+      mov pc, [pc]
+      jmp next
+
+   native branch0, "branch0"
+      pop rax
+      test rax, rax
+      jnz .skip
+      mov pc, [pc]
+      jmp next
+      .skip:
+      add pc, 8
+      jmp next
+ 
    native emit, "emit"
+
    native word, "word"
+       
    native number, "number"
+      pop rdi
+      call parse_int
+      push rax
 
    native exit, "exit"
       mov pc, [rstack]
@@ -139,93 +194,42 @@
 
    native bye, "bye"
       call exit
-
-   native branch, "branch"
-       mov pc, [pc]
-       jmp next
-
-   native branch0, "branch0"
-       pop rax
-       test rax, rax
-       jnz .skip
-       mov pc, [pc]
-       jmp next
-       .skip:
-       add pc, 8
-       jmp next
-     
-    native colon, ":"
-       mov r8, [here]
-       mov r9, [last_word]
-       mov qword[r8], r9 
-       mov qword[last_word], r8
-       add qword[here], 8
-
-       mov rdi, input_buf
-       mov rsi, 1024
-       call read_word
-       mov rdi, rax
-       mov rsi, [here]
-       mov rdx, 1024
-
-       push rsi
-       call string_copy
-       pop rsi
-
-       mov rdi, rsi
-       call string_length
-       add qword[here], rax
-       add qword[here], 2
-       mov r8, [here]
-       mov qword[r8], docol_impl
-       add qword[here], 8
-       mov qword[state], 1
-       jmp next
-       
-    native semicolon, ";", 1
-       mov r8, [here]
-       mov qword[r8], xt_exit
-       add qword[here], 8
-       mov qword[state], 0
-       jmp next
-
+    
 ;--------------------------------------
 
    find_word_func:
-   .loop:
-       push rdi
-       lea rdi, [rdi + 8]
-       push rsi
-       call string_equals
-       pop rsi
-       pop rdi
-       cmp rax, 0
-       je .find
-       mov rdi, [rdi]
-       cmp rdi, 0
-       je .fail 
-       jmp .loop
-       .find:
-           mov rax, rdi
-           ret
-       .fail:
-           mov rax, 0
-           ret
+      push rdi
+      lea rdi, [rdi + 8]
+      push rsi
+      call string_equals
+      pop rsi
+      pop rdi
+      cmp rax, 0
+      je .find
+      mov rdi, [rdi]
+      cmp rdi, 0
+      je .fail 
+      jmp find_word_func 
+   .find:
+      mov rax, rdi
+      ret
+   .fail:
+      mov rax, 0
+      ret
 
    cfa_func:
-       lea rdi, [rdi + 8]
-       push rdi
-       call string_length
-       pop rdi
-       lea rax, [rdi + rax + 2]
-       ret
+      lea rdi, [rdi + 8]
+      push rdi
+      call string_length
+      pop rdi
+      lea rax, [rdi + rax + 2]
+      ret
 
    check_immediate:
-       lea rdi, [rdi + 8]
-       push rdi
-       call string_length
-       pop rdi
-       lea rax, [rdi + rax + 1]
-       mov al, byte[rax]
-       ret
-       
+      lea rdi, [rdi + 8]
+      push rdi
+      call string_length
+      pop rdi
+      lea rax, [rdi + rax + 1]
+      mov al, byte[rax]
+      ret
