@@ -183,7 +183,9 @@
        jmp next
        
     native semicolon, ";", 1
-       mov qword[here], xt_exit
+       mov r8, [here]
+       mov qword[r8], xt_exit
+       add qword[here], 8
        mov qword[state], 0
        jmp next
 
@@ -224,5 +226,6 @@
        call string_length
        pop rdi
        lea rax, [rdi + rax + 1]
+       mov al, byte[rax]
        ret
        

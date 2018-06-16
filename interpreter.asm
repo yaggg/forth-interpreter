@@ -102,20 +102,27 @@ compiler_loop:
    pop rsi
    cmp rax, 0
    je .not_found
+.found:
    mov rdi, rax
    push rdi
-   call cfa_func
-   pop rdi
-   mov r8, rax
    call check_immediate 
-   test rax, rax
+   pop rdi
+   test al, al 
    jne .immediate
-   mov [here], r8
+.add_word:
+   call cfa_func
+   mov r9, [here]
+   mov [r9], rax
    add qword[here], 8
    mov pc, xt_selector
    jmp next
 .immediate:
-   mov [program_stub], r8
+	push rdi
+   mov rdi, 43
+	call print_char
+	pop rdi	
+   call cfa_func
+   mov [program_stub], rax
    mov pc, program_stub
    jmp next
 .not_found:
