@@ -23,6 +23,7 @@ xt_selector: dq .selector         ;
 last_word: dq _lw                 ; pointer to the last word
 here: dq dict                     ; current position in words memory
 pointer: dq mem                   ; current global data pointer 
+stack_start: dq 0                 ; start of data stack
 
 ;----------------------------------
 section .bss
@@ -40,6 +41,7 @@ section .text
 
 _start:
    mov rstack, rstack_start
+   mov [stack_start], rsp
    mov pc, xt_selector
    jmp next
 

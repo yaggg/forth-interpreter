@@ -248,4 +248,5 @@ string_copy:
 .return_succed:
     mov byte[rsi+rcx], 0x0  ; we still should null-terminate the string
     mov rax, rsi            ; else rax = pointer to a string
+    mov rdx, rcx
     ret

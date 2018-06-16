@@ -2,18 +2,107 @@
 %include "macro.inc"
 
    native drop, "drop"
+      pop rax
+      jmp next
+
    native swap, "swap"
+      pop rax
+      pop rdx
+      push rax
+      push rdx
+      jmp next
+
    native rot, "rot"
+      pop rax
+      pop rdx
+      pop rcx
+      push rax
+      push rcx
+      push rdx
+      jmp next
+    
    native dup, "dup"
+      push qword[rsp]
+      jmp next
+
    native not, "not"
+      pop rax
+      test rax, rax
+      jz .zero
+      xor rax, rax
+      push rax
+      jmp next
+   .zero:
+      mov rax, 1
+      push rax
+      jmp next
+
    native and, "and"
+      pop rax
+      pop rdx
+      and rax, rdx
+      push rax
+      jmp next
+
    native or, "or"
+      pop rax
+      pop rdx
+      or rax, rdx
+      push rax
+      jmp next
+
    native land, "land"
+      pop rax
+      pop rdx
+      test rax, rax
+      jz .no
+      push rdx
+      jmp next
+   .no:
+      push rax
+      jmp next
+  
    native lor, "lor"
-   native show, ".S"
+      pop rax
+      pop rdx
+      test rax, rax
+      jnz .yes
+      push rdx
+      jmp next
+   .yes:
+      push rax
+      jmp next
+
+   native show_stack, ".S"
+      mov rcx, rsp
+   .loop:
+      cmp rcx, [stack_start]
+      je next
+      mov rdi, [rcx]
+      push rcx
+      call print_int
+      call print_newline
+      pop rcx
+      add rcx, 8
+      jmp .loop 
+
    native to_ret, ">r"
+      pop rax
+      mov [rstack], rax
+      sub rstack, 8
+      jmp next
+
    native from_ret, "r>"
+      add rstack, 8
+      mov rax, [rstack]
+      push rax
+      jmp next
+
    native r_fetch, "r@"
+      add rstack, 8
+      push qword[rstack]
+      sub rstack, 8
+      jmp next
 
    native colon, ":"
       mov r8, [here]              ; put previous address firstly
@@ -42,13 +131,12 @@
       mov qword[state], 1         ; change state to compilation
       jmp next                    ;
       
-  native semicolon, ";", 1
-     mov r8, [here]              ;
-     mov qword[r8], xt_exit      ; put xt_exit at the end 
-     add qword[here], 8          ; update here
-     mov qword[state], 0         ; change state back
-     jmp next                    ;
-
+   native semicolon, ";", 1
+      mov r8, [here]              ;
+      mov qword[r8], xt_exit      ; put xt_exit at the end 
+      add qword[here], 8          ; update here
+      mov qword[state], 0         ; change state back
+      jmp next                    ;
 
    native branch, "branch"
       mov pc, [pc]
@@ -60,18 +148,31 @@
       jnz .skip
       mov pc, [pc]
       jmp next
-      .skip:
+   .skip:
       add pc, 8
       jmp next
  
    native emit, "emit"
+      pop rdi
+      call print_char
+      jmp next
 
    native word, "word"
-       
+      mov rdi, input_buf
+      mov rsi, 1024
+      call read_word
+      mov rdi, rax
+      pop rsi 
+      mov rdx, 1024
+      call string_copy
+      push rdx
+      jmp next
+
    native number, "number"
       pop rdi
       call parse_int
       push rax
+      jmp next
 
    native exit, "exit"
       mov pc, [rstack]
@@ -195,7 +296,7 @@
    native bye, "bye"
       call exit
     
-;--------------------------------------
+;----------------------------------
 
    find_word_func:
       push rdi
