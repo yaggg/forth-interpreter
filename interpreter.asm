@@ -16,10 +16,7 @@ section .data
 
 not_found: db "Unknown command", 10, 0
 
-program_stub: dq 0                ; here will be word to interpret
-xt_selector: dq .selector         ;
-.selector: dq selector            ;
-
+program_stub: dq xt_interpret     ; here will be word to interpret
 last_word: dq _lw                 ; pointer to the last word
 here: dq dict                     ; current position in words memory
 pointer: dq mem                   ; current global data pointer 
@@ -42,7 +39,7 @@ section .text
 _start:
    mov rstack, rstack_start
    mov [stack_start], rsp
-   mov pc, xt_selector
+   mov pc, program_stub 
    jmp next
 
 
@@ -52,62 +49,6 @@ next:
     add pc, 8
     mov w, [w]
     jmp [w]
-
-
-
-selector:
-   mov rax, [state]               ; choose loop
-   test rax, rax                  ;
-   je interpreter_loop            ;
-   jmp compiler_loop              ;
-
-
-
-interpreter_loop:
-   mov rdi, input_buf             ; read word
-   mov rsi, 1024                  ;
-   call read_word                 ;
-
-   mov rsi, rax                   ; check if it in dictionary
-   mov rdi, last_word             ;
-   push rsi                       ;
-   call find_word_func            ;
-   pop rsi                        ;
-   cmp rax, 0                     ;
-   je .not_word                   ;
-
-.word:
-   mov rdi, rax                   ; if it present, just interpret it
-   call cfa_func                  ;
-   mov [program_stub], rax        ;
-   mov pc, program_stub           ;
-   jmp next                       ;
-
-.not_word:
-   mov rdi, rsi                   ; check if line is empty
-   push rdi                       ;
-   call string_length             ;
-   pop rdi                        ;
-   cmp rax, 0                     ;
-   je .empty_line                 ;
-
-   push rax                       ; check if it an integer
-   call parse_int                 ;
-   pop r8                         ;
-   cmp rdx, r8                    ;
-   jne .not_found                 ;
-   push rax                       ;
-   jmp .empty_line                ;
-
-.not_found:
-   mov pc, xt_selector            ; if no such word
-   mov rdi, not_found             ;
-   call print_string              ;
-   jmp next                       ;
-
-.empty_line:
-   mov pc, xt_selector            ; just continue
-   jmp next                       ;
 
 
 
@@ -137,7 +78,7 @@ compiler_loop:
    mov r9, [here]                 ;
    mov [r9], rax                  ;
    add qword[here], 8             ;
-   mov pc, xt_selector            ;
+;   mov pc, xt_selector            ;
    jmp next                       ;
 
 .immediate:
@@ -177,15 +118,15 @@ compiler_loop:
    mov r8, [here]                 ;
    mov [r8], rax                  ;
    add qword[here], 8             ;
-   mov pc, xt_selector            ;
+;   mov pc, xt_selector            ;
    jmp next
 
 .not_found:
-   mov pc, xt_selector            ; if no such word
+;   mov pc, xt_selector            ; if no such word
    mov rdi, not_found             ;
    call print_string              ;
    jmp next                       ;
 
 .empty_line:
-   mov pc, xt_selector            ; just continue
+;   mov pc, xt_selector            ; just continue
    jmp next                       ;

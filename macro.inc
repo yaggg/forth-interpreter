@@ -31,7 +31,7 @@ native %1, %2, 0
 %endmacro
 
 %macro colon 2
-    dq %1, %2, 0
+    colon %1, %2, 0
 %endmacro
 
 %endif
