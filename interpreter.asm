@@ -14,7 +14,7 @@ section .text
 ;----------------------------------
 section .data
 
-not_found: db "Unknown command", 10, 0
+not_found: db "Unknown command: ", 0
 
 program_stub: dq xt_selector      ; here will be word to interpret
 last_word: dq _lw                 ; pointer to the last word
@@ -47,3 +47,4 @@ next:
     add pc, 8
     mov w, [w]
     jmp [w]
+

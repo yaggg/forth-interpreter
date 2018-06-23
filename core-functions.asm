@@ -91,22 +91,20 @@ native show_stack, ".S"
    jmp .loop 
 
 native to_ret, ">r"
-   pop rax
-   mov [rstack], rax
-   sub rstack, 8
-   jmp next
+    pop rax
+    sub rstack, 8
+    mov qword [rstack], rax 
+    jmp next
 
 native from_ret, "r>"
-   add rstack, 8
-   mov rax, [rstack]
-   push rax
-   jmp next
+    mov rax, qword[rstack]
+    add rstack, 8
+    push rax
+    jmp next
 
-native r_fetch, "r@"
-   add rstack, 8
-   push qword[rstack]
-   sub rstack, 8
-   jmp next
+native ret_fetch, "r@"
+    push qword [rstack]
+    jmp next
 
 native colon, ":"
    mov r8, [here]              ; put previous address firstly
@@ -357,7 +355,6 @@ native number, "number"
 native prints, "prints"
    pop rdi
    call print_string
-   call print_newline
    jmp next
 
 native put_state, "put_state"
@@ -500,22 +497,30 @@ colon interpret, "interpret"
    dq xt_branch0
    dq .empty_line
    dq xt_swap
+   dq xt_dup
    dq xt_number
+   dq xt_to_ret
+   dq xt_rot
    dq xt_rot
    dq xt_equals
    dq xt_branch0
    dq .not_found 
+   dq xt_drop
+   dq xt_from_ret
    dq xt_exit
 
 .not_found:
+   dq xt_from_ret
    dq xt_drop
    dq xt_lit, not_found
    dq xt_prints
+   dq xt_prints
+   dq xt_lit, 10
+   dq xt_emit
    dq xt_exit
 
 .empty_line:
    dq xt_drop
    dq xt_drop
    dq xt_exit
-
 
