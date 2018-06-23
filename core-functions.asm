@@ -91,20 +91,20 @@ native show_stack, ".S"
    jmp .loop 
 
 native to_ret, ">r"
-    pop rax
-    sub rstack, 8
-    mov qword [rstack], rax 
-    jmp next
+   pop rax
+   sub rstack, 8
+   mov qword [rstack], rax 
+   jmp next
 
 native from_ret, "r>"
-    mov rax, qword[rstack]
-    add rstack, 8
-    push rax
-    jmp next
+   mov rax, qword[rstack]
+   add rstack, 8
+   push rax
+   jmp next
 
 native ret_fetch, "r@"
-    push qword [rstack]
-    jmp next
+   push qword [rstack]
+   jmp next
 
 native colon, ":"
    mov r8, [here]              ; put previous address firstly
@@ -395,6 +395,24 @@ native check_branch, "check_branch"
 .return: 
    push rax
    add qword[here], 8
+   jmp next
+
+native here, "here"
+   push qword[here]
+   jmp next
+
+native last_word, "last_word"
+   push qword[last_word]
+   jmp next
+
+native IMMEDIATE, "IMMEDIATE"
+   mov rdi, [last_word]
+   lea rdi, [rdi + 8]
+   push rdi
+   call string_length
+   pop rdi
+   lea rax, [rdi + rax + 1]
+   mov byte[rax], 1 
    jmp next
 
 colon selector, "selector"
