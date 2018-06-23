@@ -443,11 +443,16 @@ colon compiler, "compiler"
    dq xt_branch0
    dq .empty_line
    dq xt_swap
+   dq xt_dup
    dq xt_number
+   dq xt_to_ret
+   dq xt_rot
    dq xt_rot
    dq xt_equals
    dq xt_branch0
    dq .not_found 
+   dq xt_drop
+   dq xt_from_ret
    dq xt_check_branch
    dq xt_branch0
    dq .no_branch
@@ -464,9 +469,13 @@ colon compiler, "compiler"
    dq .branch
 
 .not_found:
+   dq xt_from_ret
    dq xt_drop
    dq xt_lit, not_found
    dq xt_prints
+   dq xt_prints
+   dq xt_lit, 10
+   dq xt_emit
    dq xt_exit
 
 .empty_line:
