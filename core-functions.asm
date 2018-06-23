@@ -348,6 +348,24 @@ native immediate, "immediate"
    push rax
    jmp next
 
+native check_branch, "check_branch"
+   sub qword[here], 8             ; check if prev word is branch or
+   mov r8, [here]                 ; branch0
+   cmp qword[r8], xt_branch       ;
+   je .branch                     ;
+   cmp qword[r8], xt_branch0      ;
+   je .branch                     ;
+   mov rax, 0
+   jmp .return
+
+.branch:
+   mov rax, 1
+
+.return: 
+   push rax
+   add qword[here], 8
+   jmp next
+
 colon selector, "selector"
 .loop:
    dq xt_put_state
@@ -399,7 +417,20 @@ colon compiler, "compiler"
    dq xt_equals
    dq xt_branch0
    dq .not_found 
-;;;;;;;;;;;; logic here
+   dq xt_check_branch
+   dq xt_branch0
+   dq .no_branch
+
+.branch:
+   dq xt_add_word 
+   dq xt_exit
+
+.no_branch:
+   dq xt_lit
+   dq xt_lit
+   dq xt_add_word
+   dq xt_branch
+   dq .branch
 
 .not_found:
    dq xt_drop
