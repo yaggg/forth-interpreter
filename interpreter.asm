@@ -16,7 +16,7 @@ section .data
 
 not_found: db "Unknown command", 10, 0
 
-program_stub: dq xt_interpret     ; here will be word to interpret
+program_stub: dq xt_selector      ; here will be word to interpret
 last_word: dq _lw                 ; pointer to the last word
 here: dq dict                     ; current position in words memory
 pointer: dq mem                   ; current global data pointer 
@@ -68,7 +68,7 @@ compiler_loop:
 .word:
    mov rdi, rax                   ; if present, check if it immediate
    push rdi                       ;
-   call check_immediate           ;
+;   call check_immediate           ;
    pop rdi                        ;
    test al, al                    ;
    jne .immediate                 ;
@@ -78,11 +78,10 @@ compiler_loop:
    mov r9, [here]                 ;
    mov [r9], rax                  ;
    add qword[here], 8             ;
-;   mov pc, xt_selector            ;
    jmp next                       ;
 
 .immediate:
-   call cfa_func                  ; if immediate, jusst interpret it
+   call cfa_func                  ; if immediate, just interpret it
    mov [program_stub], rax        ;
    mov pc, program_stub           ;
    jmp next                       ;

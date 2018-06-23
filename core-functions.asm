@@ -326,8 +326,43 @@ native prints, "prints"
    call print_newline
    jmp next
 
-colon interpret, "interpret"
+native put_state, "put_state"
+   push qword[state]
+   jmp next
+
+native add_word, "add_word"
+   pop rax
+   mov r9, [here]                 ; if not immediate, put it xt here
+   mov [r9], rax                  ;
+   add qword[here], 8             ;
+   jmp next                       ;
+
+native immediate, "immediate"
+   pop rdi
+   lea rdi, [rdi + 8]
+   call string_length
+   lea rax, [rdi + rax + 1]
+   mov rdi, rax
+   xor rax, rax
+   mov al, byte[rdi]
+   push rax
+   jmp next
+
+colon selector, "selector"
 .loop:
+   dq xt_put_state
+   dq xt_branch0
+   dq .interpret
+   dq xt_compiler
+   dq xt_branch
+   dq .loop
+
+.interpret:
+   dq xt_interpret
+   dq xt_branch
+   dq .loop
+
+colon compiler, "compiler"
    dq xt_inbuf
    dq xt_dup
    dq xt_find_word
@@ -338,10 +373,18 @@ colon interpret, "interpret"
 .word:
    dq xt_swap
    dq xt_drop
+   dq xt_dup
+   dq xt_immediate
+   dq xt_branch0
+   dq .add_word
    dq xt_cfa
    dq xt_exec
-   dq xt_branch
-   dq .loop
+   dq xt_exit 
+
+.add_word:
+   dq xt_cfa
+   dq xt_add_word
+   dq xt_exit
 
 .not_word:
    dq xt_drop
@@ -355,23 +398,61 @@ colon interpret, "interpret"
    dq xt_rot
    dq xt_equals
    dq xt_branch0
-   dq .not_found
-   dq xt_branch
-   dq .loop
+   dq .not_found 
+;;;;;;;;;;;; logic here
 
 .not_found:
    dq xt_drop
    dq xt_lit, not_found
    dq xt_prints
-   dq xt_branch
-   dq .loop
+   dq xt_exit
 
 .empty_line:
    dq xt_drop
    dq xt_drop
-   dq xt_branch
-   dq .loop
-  
+   dq xt_exit
+
+colon interpret, "interpret"
+   dq xt_inbuf
+   dq xt_dup
+   dq xt_find_word
+   dq xt_dup
+   dq xt_branch0
+   dq .not_word
+
+.word:
+   dq xt_swap
+   dq xt_drop
+   dq xt_cfa
+   dq xt_exec
+   dq xt_exit 
+
+.not_word:
+   dq xt_drop
+   dq xt_dup
+   dq xt_count
+   dq xt_dup
+   dq xt_branch0
+   dq .empty_line
+   dq xt_swap
+   dq xt_number
+   dq xt_rot
+   dq xt_equals
+   dq xt_branch0
+   dq .not_found 
+   dq xt_exit
+
+.not_found:
+   dq xt_drop
+   dq xt_lit, not_found
+   dq xt_prints
+   dq xt_exit
+
+.empty_line:
+   dq xt_drop
+   dq xt_drop
+   dq xt_exit
+
 ;----------------------------------
 
 find_word_func:
@@ -400,13 +481,4 @@ cfa_func:
    call string_length
    pop rdi
    lea rax, [rdi + rax + 2]
-   ret
-
-check_immediate:
-   lea rdi, [rdi + 8]
-   push rdi
-   call string_length
-   pop rdi
-   lea rax, [rdi + rax + 1]
-   mov al, byte[rax]
    ret
