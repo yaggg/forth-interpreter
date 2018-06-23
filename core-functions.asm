@@ -32,6 +32,7 @@ native not, "not"
    xor rax, rax
    push rax
    jmp next
+
 .zero:
    mov rax, 1
    push rax
@@ -58,6 +59,7 @@ native land, "land"
    jz .no
    push rdx
    jmp next
+
 .no:
    push rax
    jmp next
@@ -69,12 +71,14 @@ native lor, "lor"
    jnz .yes
    push rdx
    jmp next
+
 .yes:
    push rax
    jmp next
 
 native show_stack, ".S"
    mov rcx, rsp
+
 .loop:
    cmp rcx, [stack_start]
    je next
@@ -148,6 +152,7 @@ native branch0, "branch0"
    jnz .skip
    mov pc, [pc]
    jmp next
+
 .skip:
    add pc, 8
    jmp next
@@ -247,6 +252,7 @@ native equals, "="
    je .equals
    push 0
    jmp next
+
 .equals:
    push 1
    jmp next
@@ -258,6 +264,7 @@ native lt, "<"
    jg .greather
    push 0
    jmp next
+
 .greather:
    push 1
    jmp next
@@ -269,6 +276,7 @@ native gt, ">"
    jg .greather
    push 0
    jmp next
+
 .greather:
    push 1
    jmp next
@@ -282,13 +290,39 @@ native dot, "."
 native find_word, "find_word"
    pop rsi
    mov rdi, last_word
-   call find_word_func
+
+.loop:
+   push rdi
+   lea rdi, [rdi + 8]
+   push rsi
+   call string_equals
+   pop rsi
+   pop rdi
+   cmp rax, 0
+   je .find
+   mov rdi, [rdi]
+   cmp rdi, 0
+   je .fail 
+   jmp .loop
+
+.find:
+   mov rax, rdi
+   jmp .return
+
+.fail:
+   mov rax, 0
+
+.return:
    push rax
    jmp next
 
 native cfa, "cfa"
    pop rdi
-   call cfa_func
+   lea rdi, [rdi + 8]
+   push rdi
+   call string_length
+   pop rdi
+   lea rax, [rdi + rax + 2]
    push rax
    jmp next
 
@@ -484,32 +518,4 @@ colon interpret, "interpret"
    dq xt_drop
    dq xt_exit
 
-;----------------------------------
 
-find_word_func:
-   push rdi
-   lea rdi, [rdi + 8]
-   push rsi
-   call string_equals
-   pop rsi
-   pop rdi
-   cmp rax, 0
-   je .find
-   mov rdi, [rdi]
-   cmp rdi, 0
-   je .fail 
-   jmp find_word_func 
-.find:
-   mov rax, rdi
-   ret
-.fail:
-   mov rax, 0
-   ret
-
-cfa_func:
-   lea rdi, [rdi + 8]
-   push rdi
-   call string_length
-   pop rdi
-   lea rax, [rdi + rax + 2]
-   ret
